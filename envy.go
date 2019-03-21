@@ -12,15 +12,17 @@ import (
 // Parse takes a prefix string and exposes environment variables
 // for all flags in the default FlagSet (flag.CommandLine) in the
 // form of PREFIX_FLAGNAME.
-func Parse(p string) {
-	update(p, flag.CommandLine)
+func Parse(prefix string) {
+	update(prefix, flag.CommandLine)
 }
 
-// update takes a prefix string p and *flag.FlagSet. Each flag
-// in the FlagSet is exposed as an upper case environment variable
-// prefixed with p. Any flag that was not explicitly set by a user
-// is updated to the environment variable, if set.
-func update(p string, fs *flag.FlagSet) {
+// ParseFlagSet takes a prefix string and exposes environment variables
+// for all flags in the FlagSet in the form of PREFIX_FLAGNAME.
+//
+// Each flag in the FlagSet is exposed as an upper case environment
+// variable prefixed with prefix. Any flag that was not explicitly set
+// by a user is updated to the environment variable, if set.
+func ParseFlagSet(prefix string, fs *flag.FlagSet) {
 	// Build a map of explicitly set flags.
 	set := map[string]interface{}{}
 	fs.Visit(func(f *flag.Flag) {
