@@ -25,9 +25,9 @@ func Parse(prefix string) {
 // by a user is updated to the environment variable, if set.
 func ParseFlagSet(prefix string, fs *flag.FlagSet) {
 	// Build a map of explicitly set flags.
-	set := map[string]interface{}{}
+	set := map[string]struct{}{}
 	fs.Visit(func(f *flag.Flag) {
-		set[f.Name] = nil
+		set[f.Name] = struct{}{}
 	})
 
 	fs.VisitAll(func(f *flag.Flag) {
