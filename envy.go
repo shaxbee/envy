@@ -7,19 +7,20 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"unicode"
 )
 
 // Parse takes a prefix string and exposes environment variables
 // for all flags in the default FlagSet (flag.CommandLine) in the
 // form of PREFIX_FLAGNAME.
 func Parse(prefix string) {
-	update(prefix, flag.CommandLine)
+	ParseFlagSet(prefix, flag.CommandLine)
 }
 
 // ParseFlagSet takes a prefix string and exposes environment variables
 // for all flags in the FlagSet in the form of PREFIX_FLAGNAME.
 //
-// Each flag in the FlagSet is exposed as an upper case environment
+// Each flag in the FlagSet is exposed as an SCREAMING_SNAKE_CASE environment
 // variable prefixed with prefix. Any flag that was not explicitly set
 // by a user is updated to the environment variable, if set.
 func ParseFlagSet(prefix string, fs *flag.FlagSet) {
@@ -30,23 +31,37 @@ func ParseFlagSet(prefix string, fs *flag.FlagSet) {
 	})
 
 	fs.VisitAll(func(f *flag.Flag) {
-		// Create an env var name
-		// based on the supplied prefix.
-		envVar := fmt.Sprintf("%s_%s", p, strings.ToUpper(f.Name))
-		envVar = strings.Replace(envVar, "-", "_", -1)
+		envVar := formatName(prefix, f.Name)
 
-		// Update the Flag.Value if the
-		// env var is non "".
 		if val := os.Getenv(envVar); val != "" {
-			// Update the value if it hasn't
-			// already been set.
 			if _, defined := set[f.Name]; !defined {
 				fs.Set(f.Name, val)
 			}
 		}
 
-		// Append the env var to the
-		// Flag.Usage field.
 		f.Usage = fmt.Sprintf("%s [%s]", f.Usage, envVar)
 	})
+}
+
+func formatName(prefix, s string) string {
+	runes := []rune(s)
+	length := len(runes)
+
+	out := &strings.Builder{}
+	out.Grow(len(prefix) + length + 1)
+	out.WriteString(prefix)
+	out.WriteRune('_')
+
+	for i := 0; i < length; i++ {
+		if !unicode.IsLetter(runes[i]) {
+			out.WriteRune('_')
+			continue
+		}
+		if i > 0 && unicode.IsUpper(runes[i]) && ((i+1 < length && unicode.IsLower(runes[i+1])) || unicode.IsLower(runes[i-1])) {
+			out.WriteRune('_')
+		}
+		out.WriteRune(unicode.ToUpper(runes[i]))
+	}
+
+	return out.String()
 }

@@ -2,11 +2,11 @@
 
 # envy
 
-Fork of [jamiealquiza/envy](https://github.com/jamiealquiza/envy) without Cobra support.
+Hard fork of [jamiealquiza/envy](https://github.com/jamiealquiza/envy) limited to [flag](https://godoc.org/flag) standard package.
 
 Automatically exposes environment variables for all of your flags.
 
-Envy takes a namespace prefix that will be used for environment variable lookups. Each flag registered in your app will be prefixed, uppercased, and hyphens exchanged for underscores; if a matching environment variable is found, it will set the respective flag value as long as the value is not otherwise explicitly set (see usage for precedence).
+Envy takes a namespace prefix that will be used for environment variable lookups. Each flag registered in your app will converted to SCREAMING_SNAKE_CASE; if a matching environment variable is found, it will set the respective flag value as long as the value is not otherwise explicitly set (see usage for precedence).
 
 ### Example: flag
 
@@ -25,8 +25,8 @@ import (
 
 func main() {
         var (
-          address = flag.String("address", "127.0.0.1", "Some random address")
-          port = flag.String("port", "8131", "Some random port")
+                address = flag.String("address", "127.0.0.1", "Some random address")
+                port = flag.String("port", "8131", "Some random port")
         )
 
         envy.Parse("MYAPP") // Expose environment variables.
@@ -52,9 +52,9 @@ import (
 
 func main() {
         var (
-          flags = flag.NewFlagSet("myapp")
-          address = flags.String("address", "127.0.0.1", "Some random address")
-          port = flags.String("port", "8131", "Some random port")
+                flags = flag.NewFlagSet("myapp", flag.ExitOnError)
+                address = flags.String("address", "127.0.0.1", "Some random address")
+                port = flags.String("port", "8131", "Some random port")
         )
 
         envy.ParseFlagSet("MYAPP", flags) // Expose environment variables.
@@ -110,8 +110,8 @@ If this isn't desired, simply call `envy.Parse()` after `flag.Parse()`:
 
 ```go
 // ...
-	flag.Parse()
-  envy.Parse("MYAPP") // looks for MYAPP_ADDRESS & MYAPP_PORT
+        flag.Parse()
+        envy.Parse("MYAPP") // looks for MYAPP_ADDRESS & MYAPP_PORT
 // ...
 ```
 
